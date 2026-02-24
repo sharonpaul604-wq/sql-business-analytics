@@ -192,3 +192,70 @@ JOIN products ON orders.product_id = products.product_id
 WHERE orders.order_status IN ('Shipped', 'Paid')
 ORDER BY total_order_value DESC;
 
+-- =============================================
+-- Lesson 3: CASE Statements
+-- Date: February 2026
+-- =============================================
+
+-- Action flag using CASE
+SELECT orders.order_id,
+       customers.customer_name,
+       orders.order_status,
+       CASE
+           WHEN orders.order_status = 'Pending'  THEN 'Action Required'
+           WHEN orders.order_status = 'Shipped'  THEN 'In Progress'
+           WHEN orders.order_status = 'Invoiced' THEN 'In Progress'
+           WHEN orders.order_status = 'Paid'     THEN 'Closed'
+           ELSE 'Unknown'
+       END AS action_flag
+FROM orders
+JOIN customers ON orders.customer_id = customers.customer_id;
+
+-- Priority flag using CASE with number ranges
+SELECT orders.order_id,
+       customers.customer_name,
+       orders.quantity,
+       CASE
+           WHEN orders.quantity > 25  THEN 'High Priority'
+           WHEN orders.quantity >= 10 THEN 'Medium Priority'
+           ELSE 'Low Priority'
+       END AS priority_flag
+FROM orders
+JOIN customers ON orders.customer_id = customers.customer_id;
+
+-- Full business report combining both CASE statements
+SELECT orders.order_id,
+       customers.customer_name,
+       orders.quantity,
+       orders.order_status,
+       CASE
+           WHEN orders.order_status = 'Pending'  THEN 'Action Required'
+           WHEN orders.order_status = 'Shipped'  THEN 'In Progress'
+           WHEN orders.order_status = 'Invoiced' THEN 'In Progress'
+           WHEN orders.order_status = 'Paid'     THEN 'Closed'
+           ELSE 'Unknown'
+       END AS action_flag,
+       CASE
+           WHEN orders.quantity > 25  THEN 'High Priority'
+           WHEN orders.quantity >= 10 THEN 'Medium Priority'
+           ELSE 'Low Priority'
+       END AS priority_flag
+FROM orders
+JOIN customers ON orders.customer_id = customers.customer_id;
+
+-- Revenue health report using CASE with calculation
+SELECT customers.customer_name,
+       ROUND((orders.quantity * products.unit_price), 2) AS total_order_value,
+       CASE
+           WHEN ROUND(orders.quantity * products.unit_price, 2) > 700
+                THEN 'High Value'
+           WHEN ROUND(orders.quantity * products.unit_price, 2) >= 300
+                THEN 'Medium Value'
+           ELSE 'Low Value'
+       END AS revenue_category
+FROM customers
+JOIN orders ON customers.customer_id = orders.customer_id
+JOIN products ON orders.product_id = products.product_id
+ORDER BY total_order_value DESC;
+
+
