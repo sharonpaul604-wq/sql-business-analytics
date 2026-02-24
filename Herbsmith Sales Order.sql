@@ -160,3 +160,35 @@ GROUP BY products.category
 HAVING COUNT(orders.order_id)>1
 ORDER by total_revenue DESC;
 
+-- =============================================
+-- Lesson 2 Revision: JOIN Practice Challenges
+-- Date: February 2026
+-- =============================================
+
+-- Challenge 1: Orders with product name and quantity sorted highest first
+SELECT products.product_name, 
+       orders.quantity, 
+       orders.order_status
+FROM orders
+JOIN products ON orders.product_id = products.product_id
+ORDER BY orders.quantity DESC;
+
+-- Challenge 2: Customer orders with city and order date sorted newest first
+SELECT customers.customer_name, 
+       customers.city, 
+       orders.order_date
+FROM customers
+JOIN orders ON customers.customer_id = orders.customer_id
+ORDER BY orders.order_date DESC;
+
+-- Challenge 3: Full sales report - Shipped and Paid orders sorted by total value
+SELECT customers.customer_name, 
+       products.product_name, 
+       ROUND((orders.quantity * products.unit_price), 2) AS total_order_value, 
+       orders.order_status
+FROM customers
+JOIN orders ON customers.customer_id = orders.customer_id
+JOIN products ON orders.product_id = products.product_id
+WHERE orders.order_status IN ('Shipped', 'Paid')
+ORDER BY total_order_value DESC;
+
