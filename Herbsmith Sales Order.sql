@@ -258,4 +258,58 @@ JOIN orders ON customers.customer_id = orders.customer_id
 JOIN products ON orders.product_id = products.product_id
 ORDER BY total_order_value DESC;
 
+-- =============================================
+-- Lesson 4: Date Functions
+-- Date: February 2026
+-- =============================================
+
+-- Get today's date
+SELECT DATE('now');
+
+-- Extract year and month from order dates
+SELECT orders.order_id,
+       customers.customer_name,
+       orders.order_date,
+       strftime('%Y', orders.order_date) AS order_year,
+       strftime('%m', orders.order_date) AS order_month
+FROM orders
+JOIN customers ON orders.customer_id = customers.customer_id;
+
+-- Calculate days since each order was placed
+SELECT orders.order_id,
+       customers.customer_name,
+       orders.order_date,
+       orders.order_status,
+       CAST(julianday('now') - julianday(orders.order_date) AS INTEGER)
+       AS days_since_order
+FROM orders
+JOIN customers ON orders.customer_id = customers.customer_id
+ORDER BY days_since_order DESC;
+
+-- Filter orders by date range
+SELECT orders.order_id,
+       customers.customer_name,
+       orders.order_date,
+       orders.order_status
+FROM orders
+JOIN customers ON orders.customer_id = customers.customer_id
+WHERE orders.order_date BETWEEN '2024-01-01' AND '2024-01-10'
+ORDER BY orders.order_date;
+
+-- Overdue Pending orders report
+SELECT orders.order_id,
+       customers.customer_name,
+       orders.order_date,
+       CAST(julianday('now') - julianday(orders.order_date) AS INTEGER)
+       AS days_waiting,
+       CASE
+           WHEN CAST(julianday('now') - julianday(orders.order_date)
+                AS INTEGER) > 775 THEN 'Overdue'
+           ELSE 'On Track'
+       END AS overdue_flag
+FROM orders
+JOIN customers ON orders.customer_id = customers.customer_id
+WHERE orders.order_status = 'Pending'
+ORDER BY days_waiting DESC;
+
 
