@@ -313,3 +313,56 @@ WHERE orders.order_status = 'Pending'
 ORDER BY days_waiting DESC;
 
 
+-- =============================================
+-- Lesson 5: Subqueries
+-- Date: February 2026
+-- =============================================
+
+-- Orders with quantity above average
+SELECT orders.order_id,
+       customers.customer_name,
+       orders.quantity
+FROM orders
+JOIN customers ON orders.customer_id = customers.customer_id
+WHERE orders.quantity > (SELECT AVG(quantity) FROM orders);
+
+-- Highest value order using subquery
+SELECT customers.customer_name,
+       products.product_name,
+       ROUND(orders.quantity * products.unit_price, 2) AS total_order_value
+FROM orders
+JOIN customers ON orders.customer_id = customers.customer_id
+JOIN products ON orders.product_id = products.product_id
+WHERE ROUND(orders.quantity * products.unit_price, 2) = (
+    SELECT MAX(ROUND(quantity * unit_price, 2))
+    FROM orders
+    JOIN products ON orders.product_id = products.product_id
+);
+
+-- Repeat customers using subquery
+SELECT DISTINCT customers.customer_name,
+       customers.city
+FROM customers
+JOIN orders ON customers.customer_id = orders.customer_id
+WHERE customers.customer_id IN (
+    SELECT orders.customer_id
+    FROM orders
+    GROUP BY orders.customer_id
+    HAVING COUNT(orders.order_id) > 1
+);
+
+-- Orders below average total order value
+SELECT customers.customer_name,
+       products.product_name,
+       ROUND(orders.quantity * products.unit_price, 2) AS total_order_value
+FROM orders
+JOIN customers ON orders.customer_id = customers.customer_id
+JOIN products ON orders.product_id = products.product_id
+WHERE ROUND(orders.quantity * products.unit_price, 2) < (
+    SELECT AVG(orders.quantity * products.unit_price)
+    FROM orders
+    JOIN products ON orders.product_id = products.product_id
+)
+ORDER BY total_order_value ASC;
+
+
