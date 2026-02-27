@@ -365,4 +365,53 @@ WHERE ROUND(orders.quantity * products.unit_price, 2) < (
 )
 ORDER BY total_order_value ASC;
 
+-- =============================================
+-- Lesson 6: CTEs and NULL Handling — Practice
+-- Date: February 2026
+-- =============================================
+
+-- Challenge 1: Products with more than 30 units sold using CTE
+WITH total_units AS (
+    SELECT products.product_name,
+           SUM(order_items.quantity) AS total_units_sold
+    FROM products
+    JOIN order_items ON products.product_id = order_items.product_id
+    GROUP BY products.product_name
+)
+SELECT product_name,
+       total_units_sold
+FROM total_units
+WHERE total_units_sold > 30
+ORDER BY product_name;
+
+-- Challenge 2: All customers with total amount paid using LEFT JOIN
+SELECT customers.customer_name,
+       COALESCE(SUM(payments.amount_paid), 0.00) AS total_amount_paid
+FROM customers
+LEFT JOIN orders   ON customers.customer_id = orders.customer_id
+LEFT JOIN payments ON orders.order_id       = payments.order_id
+GROUP BY customers.customer_name
+ORDER BY customers.customer_name;
+
+-- Challenge 3: Revenue by customer type with Strong vs Needs Growth flag
+WITH total_revenue AS (
+    SELECT customers.customer_type,
+           ROUND(SUM(order_items.quantity * products.unit_price), 2) AS revenue
+    FROM orders
+    JOIN customers   ON customers.customer_id = orders.customer_id
+    JOIN order_items ON orders.order_id       = order_items.order_id
+    JOIN products    ON order_items.product_id = products.product_id
+    WHERE orders.order_status = 'Paid'
+    GROUP BY customers.customer_type
+)
+SELECT customer_type,
+       revenue,
+       CASE
+           WHEN revenue > 2000 THEN 'Strong'
+           ELSE 'Needs Growth'
+       END AS flag
+FROM total_revenue
+ORDER BY revenue DESC;
+
+
 
