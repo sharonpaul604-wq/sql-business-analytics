@@ -414,4 +414,76 @@ FROM total_revenue
 ORDER BY revenue DESC;
 
 
+-- =============================================
+-- Lesson 7: Window Functions
+-- Date: February 2026
+-- =============================================
+
+-- RANK: Ranking all orders by value
+SELECT orders.order_id,
+       customers.customer_name,
+       ROUND(order_items.quantity * products.unit_price, 2) AS order_value,
+       RANK() OVER (
+           ORDER BY ROUND(order_items.quantity * products.unit_price, 2) DESC
+       ) AS value_rank
+FROM orders
+JOIN customers   ON orders.customer_id     = customers.customer_id
+JOIN order_items ON orders.order_id        = order_items.order_id
+JOIN products    ON order_items.product_id = products.product_id;
+
+-- RANK with PARTITION BY customer
+SELECT orders.order_id,
+       customers.customer_name,
+       ROUND(order_items.quantity * products.unit_price, 2) AS order_value,
+       RANK() OVER (
+           PARTITION BY customers.customer_name
+           ORDER BY ROUND(order_items.quantity * products.unit_price, 2) DESC
+       ) AS rank_within_customer
+FROM orders
+JOIN customers   ON orders.customer_id     = customers.customer_id
+JOIN order_items ON orders.order_id        = order_items.order_id
+JOIN products    ON order_items.product_id = products.product_id
+ORDER BY customers.customer_name, rank_within_customer;
+
+-- ROW_NUMBER vs RANK comparison
+SELECT orders.order_id,
+       customers.customer_name,
+       ROUND(order_items.quantity * products.unit_price, 2) AS order_value,
+       RANK() OVER (
+           ORDER BY ROUND(order_items.quantity * products.unit_price, 2) DESC
+       ) AS rank_number,
+       ROW_NUMBER() OVER (
+           ORDER BY ROUND(order_items.quantity * products.unit_price, 2) DESC
+       ) AS row_number
+FROM orders
+JOIN customers   ON orders.customer_id     = customers.customer_id
+JOIN order_items ON orders.order_id        = order_items.order_id
+JOIN products    ON order_items.product_id = products.product_id;
+
+-- Running total of revenue by date
+SELECT orders.order_id,
+       orders.order_date,
+       customers.customer_name,
+       ROUND(order_items.quantity * products.unit_price, 2) AS order_value,
+       ROUND(SUM(order_items.quantity * products.unit_price)
+           OVER (ORDER BY orders.order_date), 2) AS running_total
+FROM orders
+JOIN customers   ON orders.customer_id     = customers.customer_id
+JOIN order_items ON orders.order_id        = order_items.order_id
+JOIN products    ON order_items.product_id = products.product_id
+ORDER BY orders.order_date;
+
+-- Running average order value
+SELECT orders.order_id,
+       orders.order_date,
+       customers.customer_name,
+       ROUND(order_items.quantity * products.unit_price, 2) AS order_value,
+       ROUND(AVG(order_items.quantity * products.unit_price)
+           OVER (ORDER BY orders.order_date), 2) AS running_avg
+FROM orders
+JOIN customers   ON orders.customer_id     = customers.customer_id
+JOIN order_items ON orders.order_id        = order_items.order_id
+JOIN products    ON order_items.product_id = products.product_id
+ORDER BY orders.order_date;
+
 
