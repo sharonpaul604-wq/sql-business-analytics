@@ -102,8 +102,7 @@ orders, order_items
 
 - SQLite via sqliteonline.com
 - SQL — intermediate level
-- HackerRank SQL Intermediate Certificate 
-  (March 2026)
+
 
 ---
 
